@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gioca — Wordle Italiano</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+<body class="game-page">
+
+  <!-- ═══════════════════════════════════════════════
+       SCHERMATA 1: Setup (nome + difficoltà)
+  ═══════════════════════════════════════════════ -->
+  <div id="setupScreen" class="screen active">
+    <div class="setup-card">
+      <a href="index.html" class="back-link">← Home</a>
+
+      <div class="setup-logo">🟩</div>
+      <h1 class="setup-title">INIZIA A GIOCARE</h1>
+
+      <!-- Campo nome giocatore -->
+      <div class="field-group">
+        <label for="playerName" class="field-label">IL TUO NOME</label>
+        <input
+          type="text"
+          id="playerName"
+          class="field-input"
+          placeholder="es. Mario"
+          maxlength="20"
+          autocomplete="off"
+        />
+      </div>
+
+      <!-- Selezione difficoltà (card cliccabili) -->
+      <div class="field-group">
+        <label class="field-label">DIFFICOLTÀ</label>
+        <div class="difficulty-grid">
+          <button class="diff-card" data-length="5">
+            <span class="diff-icon">🌱</span>
+            <span class="diff-name">FACILE</span>
+            <span class="diff-desc">5 lettere · 6 tentativi</span>
+          </button>
+          <button class="diff-card" data-length="6">
+            <span class="diff-icon">🔥</span>
+            <span class="diff-name">MEDIO</span>
+            <span class="diff-desc">6 lettere · 7 tentativi</span>
+          </button>
+          <button class="diff-card" data-length="8">
+            <span class="diff-icon">💀</span>
+            <span class="diff-name">DIFFICILE</span>
+            <span class="diff-desc">8 lettere · 8 tentativi</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messaggio di errore -->
+      <p id="setupError" class="setup-error hidden"></p>
+
+      <button id="startBtn" class="btn btn-play full-width">
+        INIZIA LA PARTITA
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SCHERMATA 2: Gioco
+  ═══════════════════════════════════════════════ -->
+  <div id="gameScreen" class="screen">
+
+    <!-- Header di gioco -->
+    <header class="game-header">
+      <a href="index.html" class="back-link-sm">← Home</a>
+
+      <div class="game-title-area">
+        <h1 class="game-heading">WORDLE IT</h1>
+        <span id="diffBadge" class="diff-badge"></span>
+      </div>
+
+      <!-- Timer e tentativi -->
+      <div class="game-meta">
+        <div class="meta-box">
+          <span class="meta-label">TEMPO</span>
+          <span class="meta-value" id="timerDisplay">0:00</span>
+        </div>
+        <div class="meta-box">
+          <span class="meta-label">TENTATIVI</span>
+          <span class="meta-value" id="attemptsDisplay">0</span>
+        </div>
+        <div class="meta-box">
+          <span class="meta-label">GIOCATORE</span>
+          <span class="meta-value" id="playerDisplay">–</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Griglia dei tentativi -->
+    <div id="gameGrid" class="game-grid-wrapper">
+      <div class="game-grid" id="grid"></div>
+    </div>
+
+    <!-- Messaggio di feedback -->
+    <div id="gameMessage" class="game-message hidden"></div>
+
+    <!-- Tastiera virtuale -->
+    <div class="keyboard" id="keyboard"></div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       SCHERMATA 3: Risultato fine partita
+  ═══════════════════════════════════════════════ -->
+  <div id="resultScreen" class="screen">
+    <div class="result-card">
+      <div id="resultEmoji" class="result-emoji">🎉</div>
+      <h2 id="resultTitle" class="result-title">HAI VINTO!</h2>
+      <p id="resultSubtitle" class="result-subtitle"></p>
+
+      <div class="result-stats">
+        <div class="res-stat">
+          <span class="res-num" id="resTime">–</span>
+          <span class="res-label">Tempo</span>
+        </div>
+        <div class="res-stat">
+          <span class="res-num" id="resAttempts">–</span>
+          <span class="res-label">Tentativi</span>
+        </div>
+        <div class="res-stat">
+          <span class="res-num" id="resWord">–</span>
+          <span class="res-label">Parola</span>
+        </div>
+      </div>
+
+      <!-- Griglia di riepilogo miniatura -->
+      <div class="result-mini-grid" id="miniGrid"></div>
+
+      <div class="result-actions">
+        <button id="playAgainBtn" class="btn btn-play">GIOCA ANCORA</button>
+        <a href="leaderboard.html" class="btn btn-leaderboard">CLASSIFICA</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+
+</body>
+</html>

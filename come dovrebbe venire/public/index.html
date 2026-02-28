@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wordle Italiano</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+</head>
+<body class="home-page">
+
+  <!-- Sfondo animato con particelle di lettere -->
+  <div class="bg-letters" aria-hidden="true" id="bgLetters"></div>
+
+  <main class="home-container">
+
+    <!-- Logo / Titolo principale -->
+    <header class="home-header">
+      <div class="logo-badge">IT</div>
+      <h1 class="home-title">
+        <span class="title-word">WORDLE</span>
+        <span class="title-sub">ITALIANO</span>
+      </h1>
+      <p class="home-tagline">Indovina la parola segreta — in italiano!</p>
+    </header>
+
+    <!-- Tile dimostrative animate -->
+    <div class="demo-row" aria-hidden="true">
+      <div class="demo-tile correct">P</div>
+      <div class="demo-tile present">A</div>
+      <div class="demo-tile absent">R</div>
+      <div class="demo-tile correct">O</div>
+      <div class="demo-tile present">L</div>
+      <div class="demo-tile absent">A</div>
+    </div>
+
+    <!-- Legenda colori -->
+    <div class="legend">
+      <span class="legend-item"><span class="dot correct"></span> Lettera corretta</span>
+      <span class="legend-item"><span class="dot present"></span> Presente, posizione errata</span>
+      <span class="legend-item"><span class="dot absent"></span> Non presente</span>
+    </div>
+
+    <!-- Pulsanti navigazione principali -->
+    <nav class="home-nav">
+      <a href="game.html" class="btn btn-play">
+        <span class="btn-icon">▶</span>
+        GIOCA
+      </a>
+      <a href="leaderboard.html" class="btn btn-leaderboard">
+        <span class="btn-icon">🏆</span>
+        CLASSIFICA
+      </a>
+    </nav>
+
+    <!-- Statistiche rapide caricate dall'API -->
+    <section class="quick-stats" id="quickStats">
+      <div class="stat-box">
+        <span class="stat-num" id="statTotal">–</span>
+        <span class="stat-label">Partite</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="statWin">–</span>
+        <span class="stat-label">Vittorie</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="statRate">–</span>
+        <span class="stat-label">% Vittorie</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="statAvg">–</span>
+        <span class="stat-label">Media tentativi</span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="home-footer">
+    Progetto Node.js / Express &mdash; Wordle Italiano &copy; 2025
+  </footer>
+
+  <script>
+    // ── Carica statistiche globali dall'API Express ──────────────
+    fetch('/api/stats')
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('statTotal').textContent = data.totalGames;
+        document.getElementById('statWin').textContent   = data.totalWins;
+        document.getElementById('statRate').textContent  = data.winRate + '%';
+        document.getElementById('statAvg').textContent   = data.avgAttempts;
+      })
+      .catch(() => {}); // Silenzioso in caso di errore
+
+    // ── Sfondo animato con lettere dell'alfabeto italiano ────────
+    const container = document.getElementById('bgLetters');
+    const letters   = 'ABCDEFGHILMNOPQRSTUVZ';
+    for (let i = 0; i < 40; i++) {
+      const el  = document.createElement('span');
+      el.className  = 'bg-letter';
+      el.textContent = letters[Math.floor(Math.random() * letters.length)];
+      el.style.cssText = `
+        left: ${Math.random() * 100}%;
+        top:  ${Math.random() * 100}%;
+        animation-duration: ${6 + Math.random() * 10}s;
+        animation-delay:    ${-Math.random() * 10}s;
+        font-size: ${1 + Math.random() * 2.5}rem;
+        opacity: ${0.03 + Math.random() * 0.07};
+      `;
+      container.appendChild(el);
+    }
+  </script>
+
+</body>
+</html>

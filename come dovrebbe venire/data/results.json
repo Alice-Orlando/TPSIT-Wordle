@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1772270326202,
+    "player": "alice",
+    "word": "MORSO",
+    "attempts": 6,
+    "time": 106,
+    "difficulty": 5,
+    "won": true,
+    "date": "2026-02-28T09:18:46.202Z"
+  },
+  {
+    "id": 1772270509771,
+    "player": "daniele",
+    "word": "PROVA",
+    "attempts": 6,
+    "time": 58,
+    "difficulty": 5,
+    "won": true,
+    "date": "2026-02-28T09:21:49.771Z"
+  },
+  {
+    "id": 1772270583944,
+    "player": "thomas",
+    "word": "STREGA",
+    "attempts": 4,
+    "time": 47,
+    "difficulty": 6,
+    "won": true,
+    "date": "2026-02-28T09:23:03.944Z"
+  },
+  {
+    "id": 1772270723933,
+    "player": "margherita",
+    "word": "SCUOLA",
+    "attempts": 7,
+    "time": 127,
+    "difficulty": 6,
+    "won": true,
+    "date": "2026-02-28T09:25:23.933Z"
+  },
+  {
+    "id": 1772270925138,
+    "player": "matteo",
+    "word": "GIRASOLE",
+    "attempts": 8,
+    "time": 173,
+    "difficulty": 8,
+    "won": true,
+    "date": "2026-02-28T09:28:45.138Z"
+  },
+  {
+    "id": 1772271157399,
+    "player": "alessandro",
+    "word": "CAMPAGNA",
+    "attempts": 8,
+    "time": 220,
+    "difficulty": 8,
+    "won": true,
+    "date": "2026-02-28T09:32:37.399Z"
+  },
+  {
+    "id": 1772271218763,
+    "player": "simone",
+    "word": "BELLO",
+    "attempts": 6,
+    "time": 44,
+    "difficulty": 5,
+    "won": false,
+    "date": "2026-02-28T09:33:38.763Z"
+  }
+]
