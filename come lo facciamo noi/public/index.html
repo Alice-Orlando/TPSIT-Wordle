@@ -1,13 +1,96 @@
 <!-- qui ci sarà la schermata iniziale -->
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wordle Italiano</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 </head>
-<body>
-  
+<body class="home-page">
+
+  <main class="home-container">
+
+    <!-- Titolo principale -->
+    <h1 class="home-title">
+      <span class="title-word">WORDLE</span>
+      <span class="title-sub">ITALIANO</span>
+    </h1>
+    <p class="home-tagline">Indovina la parola segreta — in italiano!</p>
+
+    <!-- Tile dimostrative -->
+    <div class="demo-row">
+      <div class="demo-tile correct">P</div>
+      <div class="demo-tile present">A</div>
+      <div class="demo-tile absent">R</div>
+      <div class="demo-tile correct">O</div>
+      <div class="demo-tile present">L</div>
+      <div class="demo-tile absent">A</div>
+    </div>
+
+    <!-- Legenda colori -->
+    <div class="legend">
+      <span><span class="dot correct"></span> Lettera corretta</span>
+      <span><span class="dot present"></span> Posizione errata</span>
+      <span><span class="dot absent"></span> Non presente</span>
+    </div>
+
+    <!-- Pulsanti di navigazione -->
+    <nav class="home-nav">
+      <a href="game.html" class="btn btn-play">▶ GIOCA</a>
+      <a href="leaderboard.html" class="btn btn-leaderboard">🏆 CLASSIFICA</a>
+    </nav>
+
+    <!-- Statistiche globali (popolate da JS) -->
+    <section class="quick-stats">
+      <div class="stat-box">
+        <span class="stat-num" id="statTotal">–</span>
+        <span class="stat-label">Partite</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="statWin">–</span>
+        <span class="stat-label">Vittorie</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="statRate">–</span>
+        <span class="stat-label">% Vittorie</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="statAvg">–</span>
+        <span class="stat-label">Media tentativi</span>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="home-footer">
+    Progetto Node.js / Express — Wordle Italiano © 2025
+  </footer>
+
+  <script>
+    // Funzione async: carica le statistiche dall'API Express
+    // async/await è più leggibile rispetto a .then().catch()
+    async function caricaStatistiche() {
+      try {
+        const risposta = await fetch('/api/stats');  // Chiamata GET al server
+        const dati     = await risposta.json();      // Converte la risposta in oggetto JS
+
+        // Aggiorna il testo degli elementi HTML con i dati ricevuti
+        document.getElementById('statTotal').textContent = dati.totalGames;
+        document.getElementById('statWin').textContent   = dati.totalWins;
+        document.getElementById('statRate').textContent  = dati.winRate + '%';
+        document.getElementById('statAvg').textContent   = dati.avgAttempts;
+
+      } catch (errore) {
+        // Se il server non risponde, le statistiche restano a "–"
+        console.log('Statistiche non disponibili:', errore);
+      }
+    }
+
+    // Chiama la funzione quando la pagina è pronta
+    caricaStatistiche();
+  </script>
+
 </body>
 </html>
