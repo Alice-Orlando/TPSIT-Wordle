@@ -1,0 +1,116 @@
+{
+  "users": [
+    {
+      "id": "u1",
+      "username": "marco_beats",
+      "password": "1234",
+      "avatar": "🎧",
+      "bio": "Amo la musica elettronica",
+      "createdAt": "2024-01-10T10:00:00Z"
+    },
+    {
+      "id": "u2",
+      "username": "sofia_vibes",
+      "password": "1234",
+      "avatar": "🎵",
+      "bio": "Pop & R&B lover",
+      "createdAt": "2024-01-12T14:30:00Z"
+    },
+    {
+      "id": "b4514798c341b667",
+      "username": "dany",
+      "password": "miao",
+      "avatar": "🎧",
+      "bio": "alice puzza",
+      "createdAt": "2026-03-02T06:16:54.128Z"
+    },
+    {
+      "id": "0904adb6cd0f8df1",
+      "username": "maggy",
+      "password": "bersa",
+      "avatar": "🎧",
+      "bio": "alice puzza 2 volte",
+      "createdAt": "2026-03-02T06:20:21.642Z"
+    }
+  ],
+  "playlists": [
+    {
+      "id": "p1",
+      "userId": "u1",
+      "name": "Chill Session",
+      "subtitle": "Per le serate tranquille 🌙",
+      "cover": "🌊",
+      "songs": [
+        {
+          "id": "s1",
+          "title": "Blinding Lights",
+          "artist": "The Weeknd",
+          "album": "After Hours",
+          "duration": "3:20",
+          "genre": "Pop"
+        },
+        {
+          "id": "s2",
+          "title": "Levitating",
+          "artist": "Dua Lipa",
+          "album": "Future Nostalgia",
+          "duration": "3:23",
+          "genre": "Pop"
+        },
+        {
+          "id": "s3",
+          "title": "Save Your Tears",
+          "artist": "The Weeknd",
+          "album": "After Hours",
+          "duration": "3:35",
+          "genre": "Pop"
+        }
+      ],
+      "createdAt": "2024-02-01T08:00:00Z"
+    },
+    {
+      "id": "p2",
+      "userId": "u2",
+      "name": "Energia Totale",
+      "subtitle": "Canzoni che mi caricano 🔥",
+      "cover": "⚡",
+      "songs": [
+        {
+          "id": "s4",
+          "title": "SICKO MODE",
+          "artist": "Travis Scott",
+          "album": "Astroworld",
+          "duration": "5:12",
+          "genre": "Hip-Hop"
+        },
+        {
+          "id": "s5",
+          "title": "Montero",
+          "artist": "Lil Nas X",
+          "album": "Montero",
+          "duration": "2:17",
+          "genre": "Hip-Hop"
+        }
+      ],
+      "createdAt": "2024-02-05T16:00:00Z"
+    },
+    {
+      "id": "443b73c78810b9c8",
+      "userId": "b4514798c341b667",
+      "name": "alice",
+      "subtitle": "solo Nayt",
+      "cover": "🎵",
+      "songs": [],
+      "createdAt": "2026-03-02T06:18:10.416Z"
+    },
+    {
+      "id": "a77dd82ce0c44100",
+      "userId": "0904adb6cd0f8df1",
+      "name": "colore",
+      "subtitle": "mio",
+      "cover": "🎵",
+      "songs": [],
+      "createdAt": "2026-03-02T06:20:32.614Z"
+    }
+  ]
+}

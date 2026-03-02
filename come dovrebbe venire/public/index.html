@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TuneNest — Le tue playlist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ════════════════════════════════════════════
+       VARIABILI CSS — Palette ispirata a Spotify
+       con personalità propria
+    ════════════════════════════════════════════ */
+    :root {
+      --bg:          #0a0a0f;
+      --surface:     #111118;
+      --surface2:    #18181f;
+      --surface3:    #22222c;
+      --border:      #2a2a38;
+      --green:       #1db954;
+      --green-dim:   #17a349;
+      --green-glow:  rgba(29,185,84,.25);
+      --text:        #ffffff;
+      --text-muted:  #a0a0b0;
+      --text-dim:    #606070;
+      --accent:      #b455f5;
+      --red:         #e84343;
+      --radius:      12px;
+      --radius-lg:   20px;
+      --sidebar-w:   240px;
+      --transition:  .2s cubic-bezier(.4,0,.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* ── SCROLLBAR CUSTOM ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ════════════════════════════════════════════
+       LAYOUT PRINCIPALE
+    ════════════════════════════════════════════ */
+    #app {
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr;
+      grid-template-rows: 1fr 80px;
+      height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    #sidebar {
+      grid-row: 1 / 2;
+      background: #080810;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px;
+      gap: 8px;
+      overflow-y: auto;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--green);
+      letter-spacing: -0.5px;
+      padding: 0 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo span { color: var(--text); }
+
+    .nav-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 12px 8px 4px;
+    }
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      transition: var(--transition);
+    }
+    .nav-btn:hover  { background: var(--surface2); color: var(--text); }
+    .nav-btn.active { background: var(--surface2); color: var(--text); }
+    .nav-btn .icon  { font-size: 18px; width: 22px; text-align: center; }
+
+    /* Playlist sidebar list */
+    #sidebar-playlists { flex: 1; overflow-y: auto; }
+    .sidebar-pl-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .sidebar-pl-item:hover { background: var(--surface2); }
+    .sidebar-pl-cover {
+      width: 36px; height: 36px;
+      border-radius: 4px;
+      background: var(--surface3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .sidebar-pl-info { overflow: hidden; }
+    .sidebar-pl-name {
+      font-size: 13px; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .sidebar-pl-count { font-size: 11px; color: var(--text-muted); }
+
+    /* ── MAIN CONTENT ── */
+    #main {
+      grid-row: 1 / 2;
+      overflow-y: auto;
+      background: linear-gradient(180deg, #1a1a28 0%, var(--bg) 340px);
+    }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 32px;
+      background: rgba(10,10,15,.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-nav { display: flex; gap: 8px; }
+    .topbar-nav button {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(0,0,0,.5); border: none; color: var(--text);
+      font-size: 16px; cursor: pointer; transition: var(--transition);
+    }
+    .topbar-nav button:hover { background: var(--surface3); }
+
+    #user-info {
+      display: flex; align-items: center; gap: 12px;
+    }
+    #user-avatar-chip {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 6px 16px 6px 8px;
+      cursor: pointer; transition: var(--transition);
+    }
+    #user-avatar-chip:hover { background: var(--surface3); }
+    .chip-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--green); display: flex;
+      align-items: center; justify-content: center; font-size: 14px;
+    }
+    .chip-name { font-size: 13px; font-weight: 500; }
+
+    /* ── PAGE SECTIONS ── */
+    .page { display: none; padding: 32px; }
+    .page.active { display: block; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      margin-bottom: 32px;
+    }
+    .page-header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 38px; font-weight: 800;
+      letter-spacing: -1px; line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .page-header p { color: var(--text-muted); font-size: 15px; }
+
+    /* ── GRID ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 20px;
+    }
+
+    /* ── PLAYLIST CARD ── */
+    .pl-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+    .pl-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at top left, var(--green-glow), transparent 70%);
+      opacity: 0; transition: var(--transition);
+    }
+    .pl-card:hover { border-color: var(--green); transform: translateY(-3px); }
+    .pl-card:hover::before { opacity: 1; }
+
+    .pl-card-cover {
+      width: 100%; aspect-ratio: 1;
+      border-radius: 10px;
+      background: var(--surface3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 52px; margin-bottom: 16px;
+      position: relative; overflow: hidden;
+    }
+    .pl-card-cover-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, #1db95430, #b455f520);
+    }
+    .pl-card-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 15px; font-weight: 700;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .pl-card-subtitle { font-size: 12px; color: var(--text-muted); }
+    .pl-card-meta { font-size: 11px; color: var(--text-dim); margin-top: 8px; }
+
+    /* ── PLAYLIST DETAIL ── */
+    #page-detail { animation: fadeUp .3s ease; }
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(12px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    .detail-header {
+      display: flex; gap: 32px; align-items: flex-end;
+      margin-bottom: 36px;
+      padding: 32px;
+      background: linear-gradient(180deg, #1a2a1a, transparent);
+      border-radius: var(--radius-lg);
+    }
+    .detail-cover {
+      width: 180px; height: 180px; flex-shrink: 0;
+      border-radius: var(--radius);
+      background: var(--surface3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 80px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    .detail-info {}
+    .detail-type { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+    .detail-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 42px; font-weight: 800;
+      letter-spacing: -1px; line-height: 1;
+      margin-bottom: 12px;
+    }
+    .detail-subtitle { color: var(--text-muted); margin-bottom: 8px; font-size: 15px; }
+    .detail-meta { font-size: 13px; color: var(--text-dim); }
+
+    .detail-actions { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 24px; border-radius: 50px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; border: none;
+      transition: var(--transition); white-space: nowrap;
+    }
+    .btn-green  { background: var(--green); color: #000; }
+    .btn-green:hover { background: #1ed760; transform: scale(1.03); }
+    .btn-ghost  {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--text-muted);
+    }
+    .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+    .btn-danger { background: transparent; border: 1.5px solid var(--red); color: var(--red); }
+    .btn-danger:hover { background: var(--red); color: #fff; }
+    .btn-sm { padding: 6px 14px; font-size: 12px; }
+
+    /* ── SONGS TABLE ── */
+    .songs-table { width: 100%; border-collapse: collapse; }
+    .songs-table thead th {
+      text-align: left; padding: 8px 16px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+    }
+    .song-row {
+      display: grid;
+      grid-template-columns: 40px 1fr 1fr 1fr 80px 60px;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: var(--transition);
+    }
+    .song-row:hover { background: var(--surface2); }
+    .song-num { color: var(--text-muted); font-size: 14px; text-align: center; }
+    .song-row:hover .song-num { display: none; }
+    .song-play-btn { display: none; font-size: 16px; text-align: center; cursor: pointer; }
+    .song-row:hover .song-play-btn { display: block; }
+    .song-title { font-size: 14px; font-weight: 500; }
+    .song-artist { font-size: 13px; color: var(--text-muted); }
+    .song-album { font-size: 13px; color: var(--text-muted); }
+    .song-genre {
+      font-size: 11px; font-weight: 600;
+      background: var(--surface3);
+      border-radius: 20px; padding: 3px 10px;
+      color: var(--text-muted); width: fit-content;
+    }
+    .song-duration { font-size: 13px; color: var(--text-muted); text-align: right; }
+    .song-delete-btn {
+      background: none; border: none; color: var(--text-dim);
+      cursor: pointer; font-size: 16px; opacity: 0;
+      transition: var(--transition);
+    }
+    .song-row:hover .song-delete-btn { opacity: 1; }
+    .song-delete-btn:hover { color: var(--red); }
+
+    /* ── MODAL OVERLAY ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,.75); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: var(--transition);
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      width: 480px; max-width: 95vw;
+      transform: scale(.95); transition: var(--transition);
+    }
+    .modal-overlay.open .modal { transform: scale(1); }
+
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px; font-weight: 800; margin-bottom: 24px;
+    }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+
+    /* ── FORM ELEMENTS ── */
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: block; font-size: 12px; font-weight: 600;
+      letter-spacing: .07em; text-transform: uppercase;
+      color: var(--text-muted); margin-bottom: 8px;
+    }
+    .form-input, .form-select {
+      width: 100%; padding: 12px 16px;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+      transition: var(--transition); outline: none;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px var(--green-glow);
+    }
+    .form-input::placeholder { color: var(--text-dim); }
+    .emoji-grid {
+      display: grid; grid-template-columns: repeat(8,1fr); gap: 6px;
+    }
+    .emoji-btn {
+      aspect-ratio: 1; border-radius: 6px;
+      background: var(--surface2); border: 1.5px solid transparent;
+      font-size: 20px; cursor: pointer; transition: var(--transition);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .emoji-btn:hover { border-color: var(--border); background: var(--surface3); }
+    .emoji-btn.selected { border-color: var(--green); background: var(--green-glow); }
+
+    /* ── AUTH PAGE ── */
+    #auth-screen {
+      position: fixed; inset: 0; z-index: 200;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0;
+    }
+    .auth-card {
+      width: 400px; max-width: 95vw;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+    }
+    .auth-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px; font-weight: 800;
+      color: var(--green); text-align: center;
+      margin-bottom: 8px; letter-spacing: -1px;
+    }
+    .auth-logo span { color: var(--text); }
+    .auth-subtitle { text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 32px; }
+    .auth-tabs { display: flex; background: var(--surface2); border-radius: 8px; padding: 4px; gap: 4px; margin-bottom: 28px; }
+    .auth-tab {
+      flex: 1; padding: 8px; border-radius: 6px; border: none;
+      background: transparent; color: var(--text-muted);
+      font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: var(--transition);
+    }
+    .auth-tab.active { background: var(--surface); color: var(--text); }
+
+    /* ── DISCOVER ── */
+    .user-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px; cursor: pointer;
+      transition: var(--transition);
+    }
+    .user-card:hover { border-color: var(--green); transform: translateY(-2px); }
+    .user-card-avatar {
+      font-size: 40px; margin-bottom: 12px;
+      width: 60px; height: 60px;
+      background: var(--surface3); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .user-card-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .user-card-bio { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+    .user-card-plcount { font-size: 12px; color: var(--green); font-weight: 600; }
+
+    /* ── SEARCH BAR ── */
+    .search-bar {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface); border: 1.5px solid var(--border);
+      border-radius: 50px; padding: 10px 20px; margin-bottom: 28px;
+      max-width: 480px;
+    }
+    .search-bar input {
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+    }
+    .search-bar:focus-within { border-color: var(--green); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--text-muted);
+    }
+    .empty-state .empty-icon { font-size: 52px; margin-bottom: 16px; }
+    .empty-state h3 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+    .empty-state p { font-size: 14px; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--surface3); border: 1px solid var(--border);
+      border-radius: 50px; padding: 12px 24px;
+      font-size: 14px; z-index: 999;
+      opacity: 0; transition: .3s ease; pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.success { border-color: var(--green); color: var(--green); }
+    #toast.error   { border-color: var(--red);   color: var(--red); }
+
+    /* ── PLAYER BAR (decorativa) ── */
+    #player-bar {
+      grid-column: 1 / 3;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; gap: 16px;
+    }
+    .player-left  { display: flex; align-items: center; gap: 16px; width: 250px; }
+    .player-center { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .player-right { width: 200px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+    .player-thumb {
+      width: 48px; height: 48px; border-radius: 6px;
+      background: var(--surface3); display: flex;
+      align-items: center; justify-content: center; font-size: 22px;
+    }
+    .player-song-title { font-size: 13px; font-weight: 500; }
+    .player-song-artist { font-size: 11px; color: var(--text-muted); }
+    .player-controls { display: flex; align-items: center; gap: 20px; }
+    .ctrl-btn {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 14px; cursor: pointer; transition: var(--transition);
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    }
+    .ctrl-btn:hover { color: var(--text); }
+    .ctrl-play {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--text); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; color: var(--bg); transition: var(--transition);
+    }
+    .ctrl-play:hover { transform: scale(1.08); background: var(--green); }
+    .progress-bar {
+      width: 100%; max-width: 480px; height: 4px;
+      background: var(--surface3); border-radius: 2px;
+      position: relative; cursor: pointer;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 2px;
+      background: var(--green); width: 35%;
+      transition: width .3s linear;
+    }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+    /* ── RESPONSIVE HELPER ── */
+    .nowrap { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Animations */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading { animation: spin 1s linear infinite; display: inline-block; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">🎵 Tune<span>Nest</span></div>
+    <p class="auth-subtitle">La tua musica, le tue playlist</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Accedi</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Registrati</button>
+    </div>
+
+    <!-- Login -->
+    <div id="auth-login">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" id="login-user" placeholder="Il tuo username" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" id="login-pass" type="password" placeholder="••••••••" />
+      </div>
+      <button class="btn btn-green" style="width:100%;justify-content:center" onclick="doLogin()">Accedi</button>
+      <p style="font-size:12px;color:var(--text-dim);text-align:center;margin-top:16px">
+        Demo: <strong>marco_beats</strong> / <strong>1234</strong>
+      </p>
+    </div>
+
+    <!-- Register -->
+    <div id="auth-register" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input class="form-input" id="reg-user" placeholder="Scegli un username" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" id="reg-pass" type="password" placeholder="••••••••" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Bio (opzionale)</label>
+        <input class="form-input" id="reg-bio" placeholder="Raccontati in una riga..." />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Avatar</label>
+        <div class="emoji-grid" id="reg-avatar-grid"></div>
+      </div>
+      <button class="btn btn-green" style="width:100%;justify-content:center" onclick="doRegister()">Crea account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     MAIN APP
+═══════════════════════════════════════════════════ -->
+<div id="app" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="logo">🎵 <span>TuneNest</span></div>
+
+    <button class="nav-btn active" data-page="home" onclick="goPage('home',this)">
+      <span class="icon">🏠</span> Home
+    </button>
+    <button class="nav-btn" data-page="my-playlists" onclick="goPage('my-playlists',this)">
+      <span class="icon">📚</span> Le mie playlist
+    </button>
+    <button class="nav-btn" data-page="discover" onclick="goPage('discover',this)">
+      <span class="icon">🔍</span> Scopri utenti
+    </button>
+
+    <div class="nav-section-label">Le tue playlist</div>
+    <div id="sidebar-playlists"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-nav">
+        <button onclick="history.back()">‹</button>
+        <button onclick="history.forward()">›</button>
+      </div>
+      <div id="user-info">
+        <div id="user-avatar-chip" onclick="doLogout()">
+          <div class="chip-avatar" id="chip-av">🎵</div>
+          <span class="chip-name" id="chip-name">Utente</span>
+          <span style="color:var(--text-dim);font-size:12px">· Esci</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME -->
+    <section id="page-home" class="page active">
+      <div class="page-header">
+        <h1 id="home-greeting">Buongiorno 👋</h1>
+        <p>Riprendi da dove eri rimasto</p>
+      </div>
+      <div id="home-playlists" class="cards-grid"></div>
+    </section>
+
+    <!-- MY PLAYLISTS -->
+    <section id="page-my-playlists" class="page">
+      <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+        <div>
+          <h1>Le mie playlist</h1>
+          <p>Crea e gestisci la tua musica</p>
+        </div>
+        <button class="btn btn-green" onclick="openCreatePlaylist()">＋ Nuova playlist</button>
+      </div>
+      <div id="my-playlists-grid" class="cards-grid"></div>
+    </section>
+
+    <!-- DISCOVER -->
+    <section id="page-discover" class="page">
+      <div class="page-header">
+        <h1>Scopri utenti</h1>
+        <p>Esplora le playlist della community</p>
+      </div>
+      <div class="search-bar">
+        <span>🔍</span>
+        <input id="discover-search" placeholder="Cerca un utente…" oninput="filterUsers()" />
+      </div>
+      <div id="users-grid" class="cards-grid"></div>
+    </section>
+
+    <!-- PLAYLIST DETAIL -->
+    <section id="page-detail" class="page">
+      <div id="detail-content"></div>
+    </section>
+
+    <!-- USER PUBLIC PROFILE -->
+    <section id="page-user-profile" class="page">
+      <div id="user-profile-content"></div>
+    </section>
+
+  </main>
+
+  <!-- PLAYER BAR (decorativa) -->
+  <div id="player-bar">
+    <div class="player-left">
+      <div class="player-thumb" id="player-thumb">🎵</div>
+      <div>
+        <div class="player-song-title" id="player-title">Nessun brano</div>
+        <div class="player-song-artist" id="player-artist">—</div>
+      </div>
+    </div>
+    <div class="player-center">
+      <div class="player-controls">
+        <button class="ctrl-btn" title="Casuale">⇄</button>
+        <button class="ctrl-btn">◀◀</button>
+        <button class="ctrl-play" id="play-btn" onclick="togglePlay()">▶</button>
+        <button class="ctrl-btn">▶▶</button>
+        <button class="ctrl-btn" title="Ripeti">↻</button>
+      </div>
+      <div class="progress-bar" onclick="scrubProgress(event)">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+    <div class="player-right">
+      <span style="font-size:13px;color:var(--text-dim)">🔊</span>
+      <div style="width:80px;height:4px;background:var(--surface3);border-radius:2px">
+        <div style="width:70%;height:100%;background:var(--text-muted);border-radius:2px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════════ -->
+
+<!-- Create / Edit Playlist Modal -->
+<div class="modal-overlay" id="modal-playlist">
+  <div class="modal">
+    <div class="modal-title" id="modal-playlist-title">Crea playlist</div>
+    <input type="hidden" id="edit-playlist-id" />
+    <div class="form-group">
+      <label class="form-label">Cover</label>
+      <div class="emoji-grid" id="cover-grid"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nome playlist *</label>
+      <input class="form-input" id="pl-name" placeholder="Es. Chill Session" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Sottotitolo</label>
+      <input class="form-input" id="pl-subtitle" placeholder="Es. Per le serate rilassanti 🌙" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-playlist')">Annulla</button>
+      <button class="btn btn-green" onclick="savePlaylist()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Song Modal -->
+<div class="modal-overlay" id="modal-song">
+  <div class="modal">
+    <div class="modal-title">Aggiungi canzone</div>
+    <input type="hidden" id="song-playlist-id" />
+    <div class="form-group">
+      <label class="form-label">Titolo *</label>
+      <input class="form-input" id="song-title" placeholder="Es. Blinding Lights" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Artista *</label>
+      <input class="form-input" id="song-artist" placeholder="Es. The Weeknd" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Album</label>
+      <input class="form-input" id="song-album" placeholder="Es. After Hours" />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="form-group">
+        <label class="form-label">Durata</label>
+        <input class="form-input" id="song-duration" placeholder="3:45" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Genere</label>
+        <select class="form-input form-select" id="song-genre">
+          <option>Pop</option><option>Hip-Hop</option><option>R&B</option>
+          <option>Rock</option><option>Elettronica</option><option>Jazz</option>
+          <option>Classica</option><option>Indie</option><option>Metal</option>
+          <option>Reggaeton</option><option>Country</option><option>Altro</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-song')">Annulla</button>
+      <button class="btn btn-green" onclick="saveSong()">Aggiungi</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT CLIENT
+═══════════════════════════════════════════════════ -->
+<script>
+/* ──────────────────────────────────────────────────
+   STATO GLOBALE dell'applicazione
+   (il client mantiene in memoria l'utente loggato
+    e i dati caricati via API)
+────────────────────────────────────────────────── */
+let currentUser    = null;   // Oggetto utente loggato
+let allPlaylists   = [];     // Cache playlist
+let allUsers       = [];     // Cache utenti
+let selectedCover  = '🎵';   // Cover emoji selezionata nel form
+let selectedAvatar = '🎧';   // Avatar selezionato alla registrazione
+let currentDetailPlaylist = null; // Playlist aperta nel dettaglio
+let isPlaying      = false;
+
+/* ──────────────────────────────────────────────────
+   COSTANTI
+────────────────────────────────────────────────── */
+const COVERS  = ['🎵','🎶','🎸','🎹','🎺','🎻','🥁','🎤','🎧','🎼','🌊','🔥','⚡','🌙','💜','🌴','🍀','❄️','🌈','🎯','🚀','💎','🦋','🐉'];
+const AVATARS = ['🎧','🎵','🦄','🌟','🎸','🐱','🦊','🐺','🌈','🎹','🎤','🏄','🎭','🌺','🔮','😎'];
+
+/* ──────────────────────────────────────────────────
+   HELPER: chiamata al server Express
+   Usa l'API Fetch (standard browser) per comunicare
+   con il back-end Node.js.
+   Aggiunge automaticamente l'header X-User-Id per
+   autenticare le richieste protette.
+────────────────────────────────────────────────── */
+async function api(method, endpoint, body = null) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' }
+  };
+  // Header custom usato dal middleware requireAuth sul server
+  if (currentUser) opts.headers['X-User-Id'] = currentUser.id;
+  if (body)        opts.body = JSON.stringify(body);
+
+  const res  = await fetch('/api' + endpoint, opts);
+  const data = await res.json();
+
+  if (!res.ok) throw new Error(data.error || 'Errore server');
+  return data;
+}
+
+/* ──────────────────────────────────────────────────
+   AUTH
+────────────────────────────────────────────────── */
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) =>
+    t.classList.toggle('active', (tab==='login' && i===0)||(tab==='register'&&i===1)));
+  document.getElementById('auth-login').style.display    = tab === 'login'    ? '' : 'none';
+  document.getElementById('auth-register').style.display = tab === 'register' ? '' : 'none';
+}
+
+async function doLogin() {
+  const username = document.getElementById('login-user').value.trim();
+  const password = document.getElementById('login-pass').value;
+  if (!username || !password) return toast('Inserisci username e password','error');
+  try {
+    const res = await api('POST', '/auth/login', { username, password });
+    loginSuccess(res.user);
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function doRegister() {
+  const username = document.getElementById('reg-user').value.trim();
+  const password = document.getElementById('reg-pass').value;
+  const bio      = document.getElementById('reg-bio').value.trim();
+  if (!username || !password) return toast('Username e password obbligatori','error');
+  try {
+    const res = await api('POST', '/auth/register', { username, password, bio, avatar: selectedAvatar });
+    loginSuccess(res.user);
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function loginSuccess(user) {
+  currentUser = user;
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display          = 'grid';
+  document.getElementById('chip-av').textContent   = user.avatar;
+  document.getElementById('chip-name').textContent = user.username;
+  updateGreeting();
+  loadAll();
+}
+
+function doLogout() {
+  currentUser = null;
+  allPlaylists = []; allUsers = [];
+  document.getElementById('app').style.display          = 'none';
+  document.getElementById('auth-screen').style.display  = 'flex';
+}
+
+/* ──────────────────────────────────────────────────
+   NAVIGAZIONE TRA LE PAGINE (SPA-style)
+────────────────────────────────────────────────── */
+function goPage(pageId, btn) {
+  // Nasconde tutte le section .page
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+
+  // Aggiorna la nav sidebar
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  // Ricarica i dati se necessario
+  if (pageId === 'home')          renderHome();
+  if (pageId === 'my-playlists')  renderMyPlaylists();
+  if (pageId === 'discover')      renderDiscover();
+}
+
+/* ──────────────────────────────────────────────────
+   LOAD ALL DATA
+────────────────────────────────────────────────── */
+async function loadAll() {
+  try {
+    // Parallelo: due richieste GET contemporanee
+    [allPlaylists, allUsers] = await Promise.all([
+      api('GET', '/playlists'),
+      api('GET', '/users')
+    ]);
+    renderHome();
+    renderSidebar();
+  } catch(e) { toast('Errore caricamento dati', 'error'); }
+}
+
+/* ──────────────────────────────────────────────────
+   HOME PAGE
+────────────────────────────────────────────────── */
+function updateGreeting() {
+  const h = new Date().getHours();
+  const g = h < 12 ? 'Buongiorno' : h < 18 ? 'Buon pomeriggio' : 'Buonasera';
+  document.getElementById('home-greeting').textContent = `${g}, ${currentUser.username} 👋`;
+}
+
+function renderHome() {
+  const grid = document.getElementById('home-playlists');
+  const mine = allPlaylists.filter(p => p.userId === currentUser.id);
+  if (!mine.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-icon">🎶</div>
+      <h3>Nessuna playlist ancora</h3>
+      <p>Vai in <strong>Le mie playlist</strong> e crea la prima!</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = mine.map(p => playlistCard(p)).join('');
+}
+
+/* ──────────────────────────────────────────────────
+   SIDEBAR PLAYLIST LIST
+────────────────────────────────────────────────── */
+function renderSidebar() {
+  const mine = allPlaylists.filter(p => p.userId === currentUser.id);
+  const el   = document.getElementById('sidebar-playlists');
+  el.innerHTML = mine.map(p => `
+    <div class="sidebar-pl-item" onclick="openDetail('${p.id}')">
+      <div class="sidebar-pl-cover">${p.cover}</div>
+      <div class="sidebar-pl-info">
+        <div class="sidebar-pl-name">${esc(p.name)}</div>
+        <div class="sidebar-pl-count">${p.songs.length} canzoni</div>
+      </div>
+    </div>`).join('') || '<p style="padding:8px 12px;font-size:12px;color:var(--text-dim)">Nessuna playlist</p>';
+}
+
+/* ──────────────────────────────────────────────────
+   MY PLAYLISTS
+────────────────────────────────────────────────── */
+function renderMyPlaylists() {
+  const mine = allPlaylists.filter(p => p.userId === currentUser.id);
+  const grid = document.getElementById('my-playlists-grid');
+  grid.innerHTML = mine.length
+    ? mine.map(p => playlistCard(p, true)).join('')
+    : `<div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-icon">📭</div>
+        <h3>Ancora nessuna playlist</h3>
+        <p>Premi <strong>＋ Nuova playlist</strong> per iniziare!</p>
+      </div>`;
+}
+
+/* ──────────────────────────────────────────────────
+   DISCOVER — cerca altri utenti
+────────────────────────────────────────────────── */
+function renderDiscover() {
+  filterUsers();
+}
+
+function filterUsers() {
+  const q   = document.getElementById('discover-search').value.toLowerCase();
+  const filtered = allUsers.filter(u =>
+    u.id !== currentUser.id &&
+    (u.username.toLowerCase().includes(q) || (u.bio||'').toLowerCase().includes(q))
+  );
+  const grid = document.getElementById('users-grid');
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-icon">🔍</div>
+      <h3>Nessun utente trovato</h3>
+      <p>Prova con un altro nome</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(u => {
+    const count = allPlaylists.filter(p => p.userId === u.id).length;
+    return `<div class="user-card" onclick="openUserProfile('${u.id}')">
+      <div class="user-card-avatar">${u.avatar || '🎵'}</div>
+      <div class="user-card-name">${esc(u.username)}</div>
+      <div class="user-card-bio">${esc(u.bio || 'Nessuna bio')}</div>
+      <div class="user-card-plcount">🎵 ${count} playlist pubblica${count !== 1 ? 'he' : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ──────────────────────────────────────────────────
+   USER PUBLIC PROFILE
+────────────────────────────────────────────────── */
+async function openUserProfile(userId) {
+  const user = allUsers.find(u => u.id === userId);
+  if (!user) return;
+  const userPls = allPlaylists.filter(p => p.userId === userId);
+  const el = document.getElementById('user-profile-content');
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:24px;margin-bottom:36px;padding:32px;background:var(--surface2);border-radius:var(--radius-lg)">
+      <div style="font-size:64px;background:var(--surface3);width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center">${user.avatar}</div>
+      <div>
+        <p style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px">Profilo pubblico</p>
+        <h1 style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;margin-bottom:8px">${esc(user.username)}</h1>
+        <p style="color:var(--text-muted)">${esc(user.bio||'Nessuna bio')}</p>
+        <p style="font-size:13px;color:var(--green);margin-top:8px;font-weight:600">🎵 ${userPls.length} playlist</p>
+      </div>
+    </div>
+    <h2 style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px">Playlist di ${esc(user.username)}</h2>
+    ${userPls.length
+      ? `<div class="cards-grid">${userPls.map(p => playlistCard(p)).join('')}</div>`
+      : `<div class="empty-state"><div class="empty-icon">📭</div><h3>Nessuna playlist pubblica</h3></div>`}
+  `;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-user-profile').classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+}
+
+/* ──────────────────────────────────────────────────
+   PLAYLIST DETAIL
+────────────────────────────────────────────────── */
+async function openDetail(playlistId) {
+  // Recupera la playlist aggiornata dal server
+  const pl = await api('GET', `/playlists/${playlistId}`);
+  // Aggiorna anche la cache locale
+  const idx = allPlaylists.findIndex(p => p.id === playlistId);
+  if (idx > -1) allPlaylists[idx] = pl;
+  currentDetailPlaylist = pl;
+
+  const isOwner = pl.userId === currentUser.id;
+  const el      = document.getElementById('detail-content');
+
+  el.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-cover">${pl.cover}</div>
+      <div class="detail-info">
+        <p class="detail-type">Playlist</p>
+        <h1 class="detail-name">${esc(pl.name)}</h1>
+        <p class="detail-subtitle">${esc(pl.subtitle || '')}</p>
+        <p class="detail-meta">
+          di <strong>${esc(pl.author?.username || 'Sconosciuto')}</strong>
+          &nbsp;·&nbsp; ${pl.songs.length} canzoni
+          &nbsp;·&nbsp; ${formatDate(pl.createdAt)}
+        </p>
+      </div>
+    </div>
+
+    <div class="detail-actions">
+      <button class="btn btn-green" onclick="playAll()">▶ Riproduci tutto</button>
+      ${isOwner ? `
+        <button class="btn btn-ghost" onclick="openCreatePlaylist('${pl.id}')">✏️ Modifica</button>
+        <button class="btn btn-ghost" onclick="openAddSong('${pl.id}')">＋ Aggiungi brano</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePlaylist('${pl.id}')">🗑 Elimina</button>
+      ` : ''}
+    </div>
+
+    <div>
+      ${pl.songs.length ? `
+        <div class="song-row" style="pointer-events:none;margin-bottom:4px">
+          <div style="color:var(--text-dim);font-size:11px;text-align:center">#</div>
+          <div style="color:var(--text-dim);font-size:11px">TITOLO</div>
+          <div style="color:var(--text-dim);font-size:11px">ARTISTA</div>
+          <div style="color:var(--text-dim);font-size:11px">ALBUM</div>
+          <div style="color:var(--text-dim);font-size:11px">GENERE</div>
+          <div style="color:var(--text-dim);font-size:11px;text-align:right">⏱</div>
+        </div>
+        <div class="divider" style="margin:0 0 8px"></div>
+        ${pl.songs.map((s, i) => `
+          <div class="song-row" onclick="playSong('${pl.cover}','${esc(s.title)}','${esc(s.artist)}')">
+            <div>
+              <span class="song-num">${i + 1}</span>
+              <span class="song-play-btn">▶</span>
+            </div>
+            <div><div class="song-title nowrap">${esc(s.title)}</div></div>
+            <div class="song-artist nowrap">${esc(s.artist)}</div>
+            <div class="song-album nowrap">${esc(s.album || '—')}</div>
+            <div><span class="song-genre">${esc(s.genre || 'Altro')}</span></div>
+            <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px">
+              <span class="song-duration">${esc(s.duration || '—')}</span>
+              ${isOwner ? `<button class="song-delete-btn" onclick="event.stopPropagation();deleteSong('${pl.id}','${s.id}')">✕</button>` : ''}
+            </div>
+          </div>`).join('')}
+      ` : `<div class="empty-state">
+          <div class="empty-icon">🎵</div>
+          <h3>Playlist vuota</h3>
+          <p>${isOwner ? 'Aggiungi il primo brano!' : 'Questa playlist non ha ancora canzoni.'}</p>
+        </div>`}
+    </div>`;
+
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-detail').classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+}
+
+/* ──────────────────────────────────────────────────
+   CREATE / EDIT PLAYLIST
+────────────────────────────────────────────────── */
+function openCreatePlaylist(editId = null) {
+  document.getElementById('modal-playlist-title').textContent = editId ? 'Modifica playlist' : 'Crea playlist';
+  document.getElementById('edit-playlist-id').value = editId || '';
+
+  const pl = editId ? allPlaylists.find(p => p.id === editId) : null;
+  document.getElementById('pl-name').value     = pl ? pl.name     : '';
+  document.getElementById('pl-subtitle').value = pl ? pl.subtitle : '';
+  selectedCover = pl ? pl.cover : '🎵';
+  buildEmojiGrid('cover-grid', COVERS, 'selectedCover');
+  openModal('modal-playlist');
+}
+
+async function savePlaylist() {
+  const editId   = document.getElementById('edit-playlist-id').value;
+  const name     = document.getElementById('pl-name').value.trim();
+  const subtitle = document.getElementById('pl-subtitle').value.trim();
+  if (!name) return toast('Il nome è obbligatorio','error');
+  try {
+    if (editId) {
+      // PUT → modifica
+      const updated = await api('PUT', `/playlists/${editId}`, { name, subtitle, cover: selectedCover });
+      const idx = allPlaylists.findIndex(p => p.id === editId);
+      if (idx > -1) allPlaylists[idx] = { ...allPlaylists[idx], ...updated };
+    } else {
+      // POST → crea nuova
+      const created = await api('POST', '/playlists', { name, subtitle, cover: selectedCover });
+      allPlaylists.push(created);
+    }
+    closeModal('modal-playlist');
+    renderSidebar();
+    renderMyPlaylists();
+    toast(editId ? 'Playlist aggiornata!' : 'Playlist creata!', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+/* ──────────────────────────────────────────────────
+   ADD SONG
+────────────────────────────────────────────────── */
+function openAddSong(playlistId) {
+  document.getElementById('song-playlist-id').value = playlistId;
+  ['song-title','song-artist','song-album','song-duration'].forEach(id =>
+    document.getElementById(id).value = '');
+  document.getElementById('song-genre').value = 'Pop';
+  openModal('modal-song');
+}
+
+async function saveSong() {
+  const playlistId = document.getElementById('song-playlist-id').value;
+  const title      = document.getElementById('song-title').value.trim();
+  const artist     = document.getElementById('song-artist').value.trim();
+  const album      = document.getElementById('song-album').value.trim();
+  const duration   = document.getElementById('song-duration').value.trim();
+  const genre      = document.getElementById('song-genre').value;
+  if (!title || !artist) return toast('Titolo e artista sono obbligatori','error');
+  try {
+    const newSong = await api('POST', `/playlists/${playlistId}/songs`, { title, artist, album, duration, genre });
+    // Aggiorna la cache locale
+    const pl = allPlaylists.find(p => p.id === playlistId);
+    if (pl) pl.songs.push(newSong);
+    closeModal('modal-song');
+    openDetail(playlistId); // Ricarica la vista
+    toast('Canzone aggiunta!', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+/* ──────────────────────────────────────────────────
+   DELETE PLAYLIST
+────────────────────────────────────────────────── */
+async function deletePlaylist(id) {
+  if (!confirm('Eliminare questa playlist?')) return;
+  try {
+    await api('DELETE', `/playlists/${id}`);
+    allPlaylists = allPlaylists.filter(p => p.id !== id);
+    renderSidebar();
+    goPage('my-playlists');
+    toast('Playlist eliminata', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+/* ──────────────────────────────────────────────────
+   DELETE SONG
+────────────────────────────────────────────────── */
+async function deleteSong(playlistId, songId) {
+  try {
+    await api('DELETE', `/playlists/${playlistId}/songs/${songId}`);
+    const pl = allPlaylists.find(p => p.id === playlistId);
+    if (pl) pl.songs = pl.songs.filter(s => s.id !== songId);
+    openDetail(playlistId);
+    toast('Canzone rimossa', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+/* ──────────────────────────────────────────────────
+   PLAYER (simulato)
+────────────────────────────────────────────────── */
+function playSong(cover, title, artist) {
+  document.getElementById('player-thumb').textContent   = cover;
+  document.getElementById('player-title').textContent   = title;
+  document.getElementById('player-artist').textContent  = artist;
+  isPlaying = true;
+  document.getElementById('play-btn').textContent = '⏸';
+  // Simula avanzamento barra
+  let pct = 0;
+  clearInterval(window._playerTimer);
+  window._playerTimer = setInterval(() => {
+    pct = (pct + 0.5) % 100;
+    document.getElementById('progress-fill').style.width = pct + '%';
+  }, 200);
+}
+
+function playAll() {
+  if (!currentDetailPlaylist || !currentDetailPlaylist.songs.length) return;
+  const s = currentDetailPlaylist.songs[0];
+  playSong(currentDetailPlaylist.cover, s.title, s.artist);
+}
+
+function togglePlay() {
+  isPlaying = !isPlaying;
+  document.getElementById('play-btn').textContent = isPlaying ? '⏸' : '▶';
+  if (!isPlaying) clearInterval(window._playerTimer);
+}
+
+function scrubProgress(e) {
+  const bar = e.currentTarget;
+  const pct = (e.offsetX / bar.offsetWidth) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+/* ──────────────────────────────────────────────────
+   MODAL HELPERS
+────────────────────────────────────────────────── */
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// Chiudi modale cliccando l'overlay
+document.querySelectorAll('.modal-overlay').forEach(ov =>
+  ov.addEventListener('click', e => { if (e.target === ov) ov.classList.remove('open'); }));
+
+/* ──────────────────────────────────────────────────
+   EMOJI GRID BUILDER
+────────────────────────────────────────────────── */
+function buildEmojiGrid(gridId, emojis, varName) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = emojis.map(e => `
+    <button class="emoji-btn ${window[varName]===e?'selected':''}"
+      onclick="selectEmoji('${gridId}','${e}','${varName}')">${e}</button>`).join('');
+}
+
+function selectEmoji(gridId, emoji, varName) {
+  window[varName] = emoji;
+  buildEmojiGrid(gridId, varName === 'selectedCover' ? COVERS : AVATARS, varName);
+}
+
+/* ──────────────────────────────────────────────────
+   CARD TEMPLATE (riutilizzabile)
+────────────────────────────────────────────────── */
+function playlistCard(p, showOwner = false) {
+  return `<div class="pl-card" onclick="openDetail('${p.id}')">
+    <div class="pl-card-cover">
+      <div class="pl-card-cover-bg"></div>
+      ${p.cover}
+    </div>
+    <div class="pl-card-name">${esc(p.name)}</div>
+    <div class="pl-card-subtitle">${esc(p.subtitle||'')}</div>
+    <div class="pl-card-meta">${p.songs.length} canzon${p.songs.length===1?'e':'i'}
+      ${p.author ? ' · ' + esc(p.author.username) : ''}
+    </div>
+  </div>`;
+}
+
+/* ──────────────────────────────────────────────────
+   TOAST NOTIFICATION
+────────────────────────────────────────────────── */
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = `show ${type}`;
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => el.className = '', 3000);
+}
+
+/* ──────────────────────────────────────────────────
+   UTILITY
+────────────────────────────────────────────────── */
+// Escapa i caratteri HTML per prevenire XSS
+function esc(str) {
+  return String(str||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString('it-IT', { year:'numeric', month:'long', day:'numeric' });
+}
+
+/* ──────────────────────────────────────────────────
+   INIT
+────────────────────────────────────────────────── */
+// Costruisce la emoji grid avatar al caricamento
+buildEmojiGrid('reg-avatar-grid', AVATARS, 'selectedAvatar');
+// Enter key nei campi login
+document.getElementById('login-pass').addEventListener('keydown', e => e.key==='Enter'&&doLogin());
+document.getElementById('login-user').addEventListener('keydown', e => e.key==='Enter'&&doLogin());
+</script>
+</body>
+</html>
